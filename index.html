@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule App</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #a2d2ff; 
+            --primary-light: #e6f2ff; 
+            --primary-dark: #1d4ed8;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --bg-light: #eef6ff;
+            --card-bg: rgba(224, 242, 254, 0.7); 
+            --text: #1e293b; 
+            --text-light: #64748b;
+            --border: rgba(162, 210, 255, 0.5); 
+            --shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        [data-theme="dark"] {
+            --bg-light: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.75); 
+            --text: #f1f5f9;
+            --text-light: #94a3b8; 
+            --border: rgba(96, 165, 250, 0.2);
+            --primary-dark: #60a5fa;
+            --primary-light: #1e293b;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #cfe5ff 100%);
+            color: var(--text); min-height: 100vh; transition: var(--transition);
+        }
+        .header {
+            text-align: center; padding: 2rem 1rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, #bde0fe 100%);
+            color: #0f172a; border-radius: 0 0 24px 24px;
+            box-shadow: var(--shadow);
+        }
+        .header h1 { font-family: 'Poppins', sans-serif; font-size: clamp(1.7rem,5vw,2.3rem); margin-bottom:.3rem; }
+        .live-clock { font-family: 'Poppins', sans-serif; font-size: clamp(.95rem,3.2vw,1.05rem); margin-top:.6rem; font-weight:500; }
+        
+        .badge-container {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .student-badge {
+            background: rgba(255,255,255,0.35);
+            padding: 0.25rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .week-badge {
+            background: rgba(37, 99, 235, 0.15);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            border: 1px solid var(--border);
+        }
+        [data-theme="dark"] .week-badge {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+        }
+
+        .container { max-width: 820px; margin: 1.5rem auto; padding: 0 1rem; }
+        
+        .summary-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 18px;
+            padding: 1.3rem 1.5rem;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .summary-left h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.15rem;
+            margin-bottom: .3rem;
+            color: var(--primary-dark);
+        }
+        .summary-left p { font-size: .95rem; color: var(--text-light); }
+        .countdown-box {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            padding: .7rem 1.2rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 140px;
+        }
+        .countdown-box .label { font-size: .75rem; opacity: .9; }
+        .countdown-box .time { font-family: 'Poppins', sans-serif; font-size: 1.35rem; font-weight: 600; }
+
+        .schedule { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px);
+            border-radius: 20px; 
+            padding: 1.4rem;
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--border); 
+        }
+
+        .controls {
+            display: flex; flex-wrap: wrap; gap: .8rem; align-items: center;
+            justify-content: space-between; margin-bottom: 1.2rem; padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .day-selector { display: flex; align-items: center; gap: .5rem; flex: 1; min-width: 200px; }
+        .day-selector label { font-weight:500; white-space:nowrap; font-size: .9rem; }
+
+        .day-boxes { display: flex; flex-wrap: wrap; gap: .35rem; }
+        
+        .day-box {
+            width: 46px; height: 36px; line-height: 36px; text-align: center;
+            border-radius: 8px; background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border); cursor: pointer; font-size: .82rem;
+            font-weight: 600; transition: var(--transition);
+        }
+        [data-theme="dark"] .day-box { background: rgba(15, 23, 42, 0.3); }
+        .day-box:hover { background: var(--primary-light); color: #1d4ed8; }
+        .day-box.active {
+            background: #2563eb; color: white; border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        [data-theme="dark"] .day-box.active {
+            background: var(--primary-dark); color: #0f172a;
+        }
+
+        .search-box { flex: 1; min-width: 160px; position: relative; }
+        .search-box input {
+            width: 100%; padding: .7rem 1rem .7rem 2.3rem; border-radius: 10px;
+            border: 1px solid var(--border); background: rgba(255, 255, 255, 0.5); color: var(--text);
+            font-family: inherit; font-size: .95rem;
+        }
+        [data-theme="dark"] .search-box input { background: rgba(15, 23, 42, 0.4); }
+        .search-box input:focus { outline: none; border-color: #2563eb; }
+        .search-box i { position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); color: var(--text-light); }
+
+        .btn-group { display: flex; gap: .4rem; flex-wrap: wrap; }
+        
+        button { 
+            background: #2563eb; color: white; border: none;
+            cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: .4rem;
+            padding: .65rem .9rem; border-radius: 10px; transition: var(--transition);
+            font-size: .88rem;
+        }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .sync-btn { background: var(--primary); color: #1e3a8a; font-weight: 600; }
+        [data-theme="dark"] .sync-btn { background: #1e3a8a; color: #a2d2ff; }
+
+        .theme-toggle, .view-toggle, .logout-btn {
+            background: transparent; color: var(--text); border: 1px solid var(--border);
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; padding: 0;
+        }
+        .theme-toggle:hover, .view-toggle:hover, .logout-btn:hover { background: rgba(255,255,255,0.25); }
+        .logout-btn { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+
+        h2#current-day { font-family:'Poppins',sans-serif; text-align:center;
+            margin:1.2rem 0 .9rem; color:#1d4ed8; font-size:1.4rem; }
+        [data-theme="dark"] h2#current-day { color: var(--primary-dark); }
+
+        ul#schedule-list { list-style:none; display:flex; flex-direction:column; gap:.7rem; }
+
+        .class-item {
+            background: rgba(239, 246, 255, 0.6); 
+            border-radius: 14px; padding: 1.1rem;
+            border-left: 4px solid transparent; transition: var(--transition);
+            border-top: 1px solid rgba(255,255,255,0.5);
+            border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+        }
+        [data-theme="dark"] .class-item { background: rgba(30, 41, 59, 0.45); }
+        
+        .class-item:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08); }
+
+        .class-time { font-weight:600; color:#1d4ed8; font-size:1.05rem; display:flex; align-items:center; gap:.45rem; }
+        [data-theme="dark"] .class-time { color: var(--primary-dark); }
+        .class-details { margin-top:.4rem; font-size:.92rem; color:var(--text-light); }
+        .class-course { font-weight:500; color:var(--text); font-size:1.02rem; }
+        .instructors { font-size:.88rem; color:var(--text-light); margin-top:.2rem; }
+        .note { font-style:italic; color:var(--warning); font-size:.82rem; margin-top:.2rem; }
+
+        .progress-bar { height:4px; background:rgba(16,185,129,.2); border-radius:2px;
+            overflow:hidden; margin-top:.6rem; opacity:0; transition:opacity .3s; }
+        .progress-fill { height:100%; background:var(--success); width:0%; transition:width .5s; }
+
+        .current-class { background: linear-gradient(135deg, rgba(230, 244, 234, 0.85), rgba(244, 251, 247, 0.85))!important;
+            border-left-color: var(--success)!important; }
+        [data-theme="dark"] .current-class { background: linear-gradient(135deg, rgba(6, 78, 59, 0.45), rgba(2, 44, 34, 0.45))!important; }
+
+        .upcoming-class { background: linear-gradient(135deg, rgba(255, 251, 235, 0.85), rgba(255, 249, 230, 0.85))!important;
+            border-left-color: var(--warning)!important; animation: pulse 2s infinite; }
+        [data-theme="dark"] .upcoming-class { background: linear-gradient(135deg, rgba(69, 26, 3, 0.45), rgba(59, 42, 18, 0.45))!important; }
+
+        @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.2);} 50%{box-shadow:0 0 0 8px rgba(245,158,11,0);} }
+
+        .no-classes { text-align:center; padding:2rem; color:var(--text-light); font-style:italic; }
+
+        .day-badge {
+            background: rgba(37, 99, 235, 0.1); color: #1d4ed8; padding: .15rem .45rem;
+            border-radius: 6px; font-size: .75rem; font-weight: 600; margin-left: .4rem;
+        }
+        [data-theme="dark"] .day-badge { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+
+        .weekly-grid, .ct-view, .courses-view { display: none; overflow-x: auto; }
+        .weekly-grid.active, .ct-view.active, .courses-view.active { display: block; }
+
+        .grid-table, .ct-table, .courses-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem;
+            min-width: 600px;
+        }
+        .grid-table th, .grid-table td, .ct-table th, .ct-table td, .courses-table th, .courses-table td {
+            border: 1px solid var(--border);
+            padding: .5rem .6rem;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .grid-table th, .ct-table th, .courses-table th {
+            background: rgba(37, 99, 235, 0.1);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+        .grid-table td, .ct-table td {
+            background: rgba(255,255,255,0.3);
+            font-size: .78rem;
+            line-height: 1.3;
+            text-align: center;
+        }
+        .courses-table td {
+            background: rgba(255,255,255,0.3);
+            font-size: .85rem;
+        }
+        [data-theme="dark"] .grid-table td, [data-theme="dark"] .ct-table td, [data-theme="dark"] .courses-table td { background: rgba(15,23,42,0.3); }
+        
+        .grid-course { font-weight: 600; color: var(--primary-dark); }
+        .grid-time { color: var(--text-light); font-size: .72rem; }
+        
+        .ct-item {
+            font-weight: 600;
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: .3rem .5rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .ct-table tr.current-week td {
+            background: rgba(37, 99, 235, 0.18);
+            backdrop-filter: blur(16px);
+            position: relative;
+        }
+        .ct-table tr.current-week td:first-child {
+            background: rgba(37, 99, 235, 0.32);
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        .ct-table tr.current-week td:first-child::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: #2563eb;
+        }
+        [data-theme="dark"] .ct-table tr.current-week td {
+            background: rgba(96, 165, 250, 0.18);
+        }
+        [data-theme="dark"] .ct-table tr.current-week td:first-child {
+            background: rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+        [data-theme="dark"] .ct-table tr.current-week td:first-child::before {
+            background: #60a5fa;
+        }
+
+        .list-view { display: none; }
+        .list-view.active { display: block; }
+
+        @media (max-width:600px) {
+            .controls { flex-direction:column; align-items:stretch; }
+            .day-selector, .search-box { min-width:auto; }
+            .summary-card { flex-direction: column; text-align: center; }
+            .countdown-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <h1>Class Schedule</h1>
+    <div class="live-clock" id="live-clock">Loading…</div>
+    <div class="badge-container">
+        <div class="student-badge" id="student-badge"></div>
+        <div class="week-badge" id="week-badge"><i class="fas fa-calendar-week"></i> Loading week...</div>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="summary-card" id="summary-card">
+        <div class="summary-left">
+            <h3 id="summary-title">Today's Overview</h3>
+            <p id="summary-text">Loading...</p>
+        </div>
+        <div class="countdown-box" id="countdown-box">
+            <div class="label">Next Class In</div>
+            <div class="time" id="countdown-time">--:--</div>
+        </div>
+    </div>
+
+    <div class="schedule">
+        <div class="controls">
+            <div class="day-selector">
+                <label><i class="fas fa-calendar-day"></i> Day:</label>
+                <div class="day-boxes" id="day-boxes"></div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search course or instructor...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="btn-group">
+                <button class="sync-btn" id="sync-btn" title="Sync to Today"><i class="fas fa-sync-alt"></i></button>
+                <button class="view-toggle" id="view-toggle" title="Toggle Weekly Grid"><i class="fas fa-th"></i></button>
+                <button class="view-toggle" id="courses-toggle" title="Course List"><i class="fas fa-book"></i></button>
+                <button class="view-toggle" id="ct-toggle" title="Class Test Routine"><i class="fas fa-file-alt"></i></button>
+                <button class="theme-toggle" id="theme-toggle" title="Dark Mode"><i class="fas fa-moon"></i></button>
+                <button class="logout-btn" id="logout-btn" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+
+        <h2 id="current-day"></h2>
+
+        <div class="list-view active" id="list-view">
+            <ul id="schedule-list"></ul>
+        </div>
+
+        <div class="weekly-grid" id="weekly-grid">
+            <table class="grid-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Sat</th>
+                        <th>Sun</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                    </tr>
+                </thead>
+                <tbody id="grid-body"></tbody>
+            </table>
+        </div>
+
+        <div class="ct-view" id="ct-view">
+            <table class="ct-table">
+                <thead>
+                    <tr>
+                        <th>Week</th>
+                        <th>Sat</th>
+                        <th>Sun</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                    </tr>
+                </thead>
+                <tbody id="ct-grid-body"></tbody>
+            </table>
+        </div>
+
+        <div class="courses-view" id="courses-view">
+            <table class="courses-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th style="text-align: center;">Credit</th>
+                    </tr>
+                </thead>
+                <tbody id="courses-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ========== LOGIN PROTECTION ========== */
+const studentId = localStorage.getItem('studentId');
+if (!studentId) {
+    window.location.href = 'login.html';
+}
+
+/* ==================== SEMESTER WEEKS & CT DATA ==================== */
+const semesterWeeks = [
+    { week: 1, start: "2026-07-11", end: "2026-07-17" },
+    { week: 2, start: "2026-07-18", end: "2026-07-24" },
+    { week: 3, start: "2026-07-25", end: "2026-07-31" },
+    { week: 4, start: "2026-08-01", end: "2026-08-07" },
+    { week: 5, start: "2026-08-08", end: "2026-08-14" },
+    { week: 6, start: "2026-08-15", end: "2026-08-21" },
+    { week: 7, start: "2026-08-22", end: "2026-08-28" },
+    // Mid-Break: Aug 29 - Sep 4 (skipped automatically)
+    { week: 8, start: "2026-09-05", end: "2026-09-11" },
+    { week: 9, start: "2026-09-12", end: "2026-09-18" },
+    { week: 10, start: "2026-09-19", end: "2026-09-25" },
+    { week: 11, start: "2026-09-26", end: "2026-10-02" },
+    { week: 12, start: "2026-10-03", end: "2026-10-09" },
+    { week: 13, start: "2026-10-10", end: "2026-10-16" },
+    { week: 14, start: "2026-10-17", end: "2026-10-23" }
+];
+
+const ctRoutineData = {
+    4:  { SAT: "", SUN: "Hum 2231", MON: "", TUES: "MSE 2211", WED: "" },
+    5:  { SAT: "ME 2259", SUN: "", MON: "", TUES: "EEE 2291", WED: "" },
+    6:  { SAT: "", SUN: "", MON: "", TUES: "MSE 2221", WED: "" },
+    7:  { SAT: "", SUN: "MSE 2211", MON: "", TUES: "", WED: "Hum 2231" },
+    8:  { SAT: "ME 2259", SUN: "", MON: "", TUES: "MSE 2221", WED: "" },
+    9:  { SAT: "EEE 2291", SUN: "", MON: "", TUES: "", WED: "Hum 2231" },
+    10: { SAT: "MSE 2211", SUN: "", MON: "", TUES: "", WED: "ME 2259" },
+    11: { SAT: "", SUN: "", MON: "EEE 2291", TUES: "", WED: "MSE 2221" },
+    12: { SAT: "", SUN: "MSE 2211", MON: "", TUES: "", WED: "ME 2259" },
+    13: { SAT: "", SUN: "Hum 2231", MON: "", TUES: "", WED: "MSE 2221" },
+    14: { SAT: "EEE 2291", SUN: "", MON: "", TUES: "", WED: "" }
+};
+
+/* ==================== DATA ==================== */
+const scheduleData = {
+    "Saturday": [
+        { code: "MSE 2211", time: "8:00–8:50", course: "MSE 2211", instructors: "Abdullah-Al-Mazed Khan / Md. Al-Riad Tonmoy" },
+        { code: "EEE 2291", time: "8:50–9:40", course: "EEE 2291", instructors: "Tasnim Sarker Joyeeta / Sushanto Bosak" },
+        { code: "ME 2259", time: "9:40–10:30", course: "ME 2259", instructors: "Dr. Mohammad U. H. Joardder / Dr. Sumaiya Sadika Tuly" },
+        { code: "EEE 2292", time: "14:30–16:00", course: "EEE 2292", instructors: "Tasnim Sarker Joyeeta", note: "Sessional" },
+        { code: "MSE 2220", time: "14:30–16:00", course: "MSE 2220", instructors: "Dr. Md. Aminul Islam", note: "Sessional" }
+    ],
+    "Sunday": [
+        { code: "MSE 2211", time: "8:00–8:50", course: "MSE 2211", instructors: "Abdullah-Al-Mazed Khan / Md. Al-Riad Tonmoy" },
+        { code: "ME 2259", time: "8:50–9:40", course: "ME 2259", instructors: "Dr. Mohammad U. H. Joardder / Dr. Sumaiya Sadika Tuly" },
+        { code: "Hum 2231", time: "9:40–10:30", course: "Hum 2231", instructors: "Dr. Kaniz Fatema / Shoaib Islam" },
+        { code: "MSE 2222", time: "14:30–16:00", course: "MSE 2222", instructors: "Ratul Islam Antor", note: "Sessional" }
+    ],
+    "Monday": [
+        { code: "Hum 2231", time: "10:50–11:40", course: "Hum 2231", instructors: "Dr. Kaniz Fatema / Shoaib Islam" },
+        { code: "MSE 2221", time: "11:40–12:30", course: "MSE 2221", instructors: "Pabitro Prosad Mondal / Ratul Islam Antor" },
+        { code: "EEE 2291", time: "12:30–13:20", course: "EEE 2291", instructors: "Tasnim Sarker Joyeeta / Sushanto Bosak" },
+        { code: "MSE 2212", time: "14:30–16:00", course: "MSE 2212", instructors: "Abdullah-Al-Mazed Khan", note: "Sessional" }
+    ],
+    "Tuesday": [
+        { code: "MSE 2211", time: "10:50–11:40", course: "MSE 2211", instructors: "Abdullah-Al-Mazed Khan / Md. Al-Riad Tonmoy" },
+        { code: "EEE 2291", time: "11:40–12:30", course: "EEE 2291", instructors: "Tasnim Sarker Joyeeta / Sushanto Bosak" },
+        { code: "MSE 2221", time: "12:30–13:20", course: "MSE 2221", instructors: "Pabitro Prosad Mondal / Ratul Islam Antor" },
+        { code: "MSE 2212", time: "14:30–16:00", course: "MSE 2212", instructors: "Abdullah-Al-Mazed Khan", note: "Sessional" }
+    ],
+    "Wednesday": [
+        { code: "MSE 2220", time: "8:00–10:30", course: "MSE 2220", instructors: "Dr. Md. Aminul Islam" },
+        { code: "MSE 2221", time: "10:50–11:40", course: "MSE 2221", instructors: "Pabitro Prosad Mondal / Ratul Islam Antor" },
+        { code: "Hum 2231", time: "11:40–12:30", course: "Hum 2231", instructors: "Dr. Kaniz Fatema / Shoaib Islam" },
+        { code: "ME 2259", time: "12:30–13:20", course: "ME 2259", instructors: "Dr. Mohammad U. H. Joardder / Dr. Sumaiya Sadika Tuly" }
+    ],
+    "Thursday": [],
+    "Friday": []
+};
+
+const courseInfo = {
+    "MSE 2211": { name: "Crystal Defect, Deformation and Fracture", credit: 3.00, sessional: false },
+    "EEE 2291": { name: "Electrical Machines and Electronics", credit: 3.00, sessional: false },
+    "ME 2259": { name: "Heat and Mass Transfer", credit: 3.00, sessional: false },
+    "EEE 2292": { name: "Electrical Machines and Electronics Sessional", credit: 0.75, sessional: true },
+    "MSE 2220": { name: "Materials & Metallurgical Analysis", credit: 1.50, sessional: true },
+    "Hum 2231": { name: "Industrial Law and Accounting", credit: 3.00, sessional: false },
+    "MSE 2222": { name: "Application to Computers in Strength of Materials", credit: 0.75, sessional: true },
+    "MSE 2221": { name: "Strength of Materials", credit: 3.00, sessional: false },
+    "MSE 2212": { name: "Crystal Defect, Deformation and Fracture Sessional", credit: 1.50, sessional: true }
+};
+
+const days = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"];
+let currentDay = '';
+let currentViewMode = 'list'; // 'list', 'grid', 'ct', or 'courses'
+
+/* ---------- Theme ---------- */
+function initTheme() {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.body.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+}
+function toggleTheme() {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon(next);
+}
+function updateThemeIcon(t) {
+    document.getElementById('theme-toggle').querySelector('i').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+/* ---------- Clock ---------- */
+function updateClock() {
+    const now = new Date();
+    const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric',
+                   hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: false };
+    document.getElementById('live-clock').textContent = now.toLocaleDateString('en-US', opts);
+}
+
+/* ---------- Week Helper ---------- */
+function getActiveWeek() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let item of semesterWeeks) {
+        const start = new Date(item.start);
+        const end = new Date(item.end);
+        end.setHours(23, 59, 59, 999);
+        if (today >= start && today <= end) {
+            return item.week;
+        }
+    }
+    return null;
+}
+
+/* ---------- Week Badge Updater ---------- */
+function updateCurrentWeekBadge() {
+    const activeWeek = getActiveWeek();
+    const badge = document.getElementById('week-badge');
+    if (activeWeek) {
+        badge.innerHTML = `<i class="fas fa-calendar-week"></i> Week ${activeWeek} of Semester`;
+    } else {
+        badge.innerHTML = `<i class="fas fa-umbrella-beach"></i> Mid-Break / Off-Period`;
+    }
+}
+
+/* ---------- Time Helpers ---------- */
+function parseTime(str) {
+    const [s,e] = str.split('–');
+    const [sh,sm] = s.split(':').map(Number);
+    const [eh,em] = e.split(':').map(Number);
+    return { start: sh*60+sm, end: eh*60+em, duration: (eh*60+em)-(sh*60+sm) };
+}
+
+function minutesToTime(mins) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${m}m`;
+}
+
+/* ---------- Summary + Countdown ---------- */
+function updateSummaryAndCountdown() {
+    const now = new Date();
+    const systemDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+    const curMin = now.getHours()*60 + now.getMinutes();
+    
+    const todayClasses = scheduleData[systemDayName] || [];
+    let remaining = 0;
+    let nextClass = null;
+    let nextStart = Infinity;
+
+    todayClasses.forEach(cls => {
+        const { start, end } = parseTime(cls.time);
+        if (curMin < end) {
+            remaining++;
+            if (curMin < start && start < nextStart) {
+                nextStart = start;
+                nextClass = cls;
+            }
+        }
+    });
+
+    const title = document.getElementById('summary-title');
+    const text = document.getElementById('summary-text');
+    const countdownTime = document.getElementById('countdown-time');
+    const countdownBox = document.getElementById('countdown-box');
+    const label = document.querySelector('#countdown-box .label');
+
+    if (systemDayName === "Thursday" || systemDayName === "Friday" || todayClasses.length === 0) {
+        title.textContent = "No Classes Today";
+        text.textContent = "Enjoy your free day!";
+        countdownTime.textContent = "—";
+        countdownBox.style.display = "none";
+        return;
+    }
+
+    countdownBox.style.display = "block";
+    title.textContent = `${systemDayName}'s Overview`;
+    
+    if (remaining === 0) {
+        text.textContent = "All classes finished for today";
+        countdownTime.textContent = "Done";
+        label.textContent = "Status";
+    } else {
+        text.textContent = `${remaining} class${remaining > 1 ? 'es' : ''} remaining today`;
+        
+        if (nextClass) {
+            const diff = nextStart - curMin;
+            countdownTime.textContent = minutesToTime(diff);
+            label.textContent = "Next Class In";
+        } else {
+            const ongoing = todayClasses.find(c => {
+                const {start, end} = parseTime(c.time);
+                return curMin >= start && curMin < end;
+            });
+            if (ongoing) {
+                const { end } = parseTime(ongoing.time);
+                countdownTime.textContent = minutesToTime(end - curMin);
+                label.textContent = "Ends In";
+            }
+        }
+    }
+}
+
+/* ---------- Sync ---------- */
+function syncRoutineToCurrentTime() {
+    const now = new Date();
+    const systemDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+    const targetDay = days.includes(systemDayName) ? systemDayName : "Saturday";
+    currentDay = targetDay;
+    
+    document.querySelectorAll('.day-box').forEach(b => {
+        b.classList.toggle('active', b.dataset.day === targetDay);
+    });
+    
+    document.getElementById('search-input').value = '';
+    currentViewMode = 'list';
+    document.getElementById('list-view').classList.add('active');
+    document.getElementById('weekly-grid').classList.remove('active');
+    document.getElementById('ct-view').classList.remove('active');
+    document.getElementById('courses-view').classList.remove('active');
+    
+    document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
+    document.getElementById('ct-toggle').querySelector('i').className = 'fas fa-file-alt';
+    document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
+
+    displaySchedule(targetDay);
+    updateSummaryAndCountdown();
+}
+
+/* ---------- Day Boxes ---------- */
+function initDayBoxes() {
+    const container = document.getElementById('day-boxes');
+    const now = new Date();
+    const systemDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+    currentDay = days.includes(systemDayName) ? systemDayName : "Saturday";
+
+    days.forEach(d => {
+        const box = document.createElement('div');
+        box.className = 'day-box';
+        box.textContent = d.slice(0,3).toUpperCase();
+        box.dataset.day = d;
+        if (d === currentDay) box.classList.add('active');
+        box.addEventListener('click', () => {
+            document.querySelectorAll('.day-box').forEach(b => b.classList.remove('active'));
+            box.classList.add('active');
+            currentDay = d;
+            
+            if (currentViewMode !== 'list') {
+                currentViewMode = 'list';
+                document.getElementById('list-view').classList.add('active');
+                document.getElementById('weekly-grid').classList.remove('active');
+                document.getElementById('ct-view').classList.remove('active');
+                document.getElementById('courses-view').classList.remove('active');
+                
+                document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
+                document.getElementById('ct-toggle').querySelector('i').className = 'fas fa-file-alt';
+                document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
+            }
+
+            if (!document.getElementById('search-input').value.trim()) displaySchedule(d);
+        });
+        container.appendChild(box);
+    });
+}
+
+/* ---------- Display Schedule ---------- */
+function displaySchedule(day) {
+    const list = document.getElementById('schedule-list');
+    const header = document.getElementById('current-day');
+    const searchTerm = (document.getElementById('search-input').value || '').trim().toLowerCase();
+    const now = new Date();
+    const systemDayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][now.getDay()];
+    const curMin = now.getHours()*60 + now.getMinutes();
+
+    let classesToShow = [];
+    let headerText = `${day} Schedule`;
+
+    if (searchTerm) {
+        Object.keys(scheduleData).forEach(d => {
+            (scheduleData[d] || []).forEach(cls => {
+                const info = courseInfo[cls.code] || { name: '' };
+                if (`${cls.code} ${info.name} ${cls.instructors} ${cls.time}`.toLowerCase().includes(searchTerm)) {
+                    classesToShow.push({ ...cls, day: d });
+                }
+            });
+        });
+        headerText = `Search: "${document.getElementById('search-input').value.trim()}"`;
+    } else {
+        classesToShow = (scheduleData[day] || []).map(cls => ({ ...cls, day }));
+    }
+
+    list.innerHTML = '';
+    header.innerHTML = headerText;
+
+    if (!classesToShow.length) {
+        list.innerHTML = `<div class="no-classes"><i class="fas fa-search"></i><br>No classes found.</div>`;
+        return;
+    }
+
+    classesToShow.forEach(entry => {
+        const cls = entry;
+        const { start, end, duration } = parseTime(cls.time);
+        const info = courseInfo[cls.code] || { name: 'Unknown', credit: 0 };
+        const li = document.createElement('li');
+        li.className = 'class-item';
+
+        let prefix = '', progress = '';
+        const isCurrentDay = (cls.day === systemDayName);
+
+        if (isCurrentDay && curMin >= start && curMin < end) {
+            li.classList.add('current-class');
+            prefix = '<i class="fas fa-play-circle"></i> Ongoing: ';
+            const pct = Math.min(((curMin - start) / duration)*100, 100);
+            progress = `<div class="progress-bar" style="opacity:1;"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+        } else if (isCurrentDay && curMin < start && curMin >= start-30) {
+            li.classList.add('upcoming-class');
+            prefix = '<i class="fas fa-clock"></i> Upcoming: ';
+        }
+
+        li.innerHTML = `
+            <div class="class-time">
+                <i class="fas fa-clock"></i> ${cls.time}
+                <span class="day-badge">${cls.day}</span>
+            </div>
+            <div class="class-details">
+                <div class="class-course">${prefix}${cls.course}</div>
+                <div style="font-size:.9rem; color:var(--text-light); margin-top:.2rem;">
+                    <i class="fas fa-book"></i> ${info.name} 
+                    <span style="margin-left:.4rem; color:#1d4ed8; font-weight:500;">(${info.credit.toFixed(2)} Cr)</span>
+                </div>
+                <div class="instructors"><i class="fas fa-chalkboard-teacher"></i> ${cls.instructors}</div>
+                ${cls.note ? `<div class="note"><i class="fas fa-flask"></i> ${cls.note}</div>` : ''}
+            </div>
+            ${progress}
+        `;
+        list.appendChild(li);
+    });
+}
+
+/* ---------- Weekly Grid ---------- */
+function buildWeeklyGrid() {
+    const tbody = document.getElementById('grid-body');
+    tbody.innerHTML = '';
+
+    const timeSlots = new Set();
+    days.forEach(d => {
+        (scheduleData[d] || []).forEach(c => timeSlots.add(c.time));
+    });
+    const sortedTimes = Array.from(timeSlots).sort((a,b) => parseTime(a).start - parseTime(b).start);
+
+    sortedTimes.forEach(time => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="grid-time">${time}</td>`;
+        
+        days.forEach(day => {
+            const cls = (scheduleData[day] || []).find(c => c.time === time);
+            if (cls) {
+                tr.innerHTML += `<td>
+                    <div class="grid-course">${cls.code}</div>
+                    <div style="font-size:.7rem; color:var(--text-light)">${cls.note || ''}</div>
+                </td>`;
+            } else {
+                tr.innerHTML += `<td style="color:var(--text-light);">—</td>`;
+            }
+        });
+        tbody.appendChild(tr);
+    });
+}
+
+/* ---------- CT Routine Grid ---------- */
+function buildCtRoutineTable() {
+    const tbody = document.getElementById('ct-grid-body');
+    tbody.innerHTML = '';
+    const activeWeek = getActiveWeek();
+
+    for (let w = 4; w <= 14; w++) {
+        const rowData = ctRoutineData[w] || { SAT: "", SUN: "", MON: "", TUES: "", WED: "" };
+        const tr = document.createElement('tr');
+        if (w === activeWeek) tr.classList.add('current-week');
+
+        let html = `<td style="font-weight:600;">Week ${w}</td>`;
+        ['SAT', 'SUN', 'MON', 'TUES', 'WED'].forEach(day => {
+            const val = rowData[day];
+            if (val) {
+                html += `<td><span class="ct-item">${val}</span></td>`;
+            } else {
+                html += `<td style="color:var(--text-light);">—</td>`;
+            }
+        });
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    }
+}
+
+/* ---------- Course List Table ---------- */
+function buildCoursesTable() {
+    const tbody = document.getElementById('courses-body');
+    tbody.innerHTML = '';
+
+    const sortedCodes = Object.keys(courseInfo).sort((a, b) => {
+        const groupOf = (code) => {
+            const isMse = code.startsWith('MSE');
+            const isSessional = courseInfo[code].sessional;
+            if (isMse && !isSessional) return 0;   // MSE theory
+            if (!isMse && !isSessional) return 1;  // other theory
+            if (isMse && isSessional) return 2;    // MSE sessional
+            return 3;                              // other sessional
+        };
+        const groupDiff = groupOf(a) - groupOf(b);
+        if (groupDiff !== 0) return groupDiff;
+        return courseInfo[b].credit - courseInfo[a].credit;
+    });
+
+    sortedCodes.forEach(code => {
+        const info = courseInfo[code];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="font-weight: 600; color: var(--primary-dark);">${code}</td>
+            <td>${info.name}</td>
+            <td style="text-align: center; font-weight: 500;">${info.credit.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+/* ---------- View & Feature Toggles ---------- */
+document.getElementById('view-toggle').addEventListener('click', () => {
+    currentViewMode = currentViewMode === 'grid' ? 'list' : 'grid';
+    
+    document.getElementById('list-view').classList.toggle('active', currentViewMode === 'list');
+    document.getElementById('weekly-grid').classList.toggle('active', currentViewMode === 'grid');
+    document.getElementById('ct-view').classList.remove('active');
+    document.getElementById('courses-view').classList.remove('active');
+    
+    document.getElementById('view-toggle').querySelector('i').className = (currentViewMode === 'grid') ? 'fas fa-list' : 'fas fa-th';
+    document.getElementById('ct-toggle').querySelector('i').className = 'fas fa-file-alt';
+    document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
+    document.getElementById('current-day').textContent = (currentViewMode === 'grid') ? 'Weekly Overview' : `${currentDay} Schedule`;
+    
+    if (currentViewMode === 'grid') buildWeeklyGrid();
+});
+
+document.getElementById('ct-toggle').addEventListener('click', () => {
+    currentViewMode = currentViewMode === 'ct' ? 'list' : 'ct';
+    
+    const isCt = (currentViewMode === 'ct');
+    document.getElementById('list-view').classList.toggle('active', currentViewMode === 'list');
+    document.getElementById('weekly-grid').classList.remove('active');
+    document.getElementById('ct-view').classList.toggle('active', isCt);
+    document.getElementById('courses-view').classList.remove('active');
+    
+    document.getElementById('ct-toggle').querySelector('i').className = isCt ? 'fas fa-list' : 'fas fa-file-alt';
+    document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
+    document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
+    document.getElementById('current-day').textContent = isCt ? 'Class Test Routine' : `${currentDay} Schedule`;
+    
+    if (isCt) buildCtRoutineTable();
+});
+
+document.getElementById('courses-toggle').addEventListener('click', () => {
+    currentViewMode = currentViewMode === 'courses' ? 'list' : 'courses';
+    
+    const isCourses = (currentViewMode === 'courses');
+    document.getElementById('list-view').classList.toggle('active', currentViewMode === 'list');
+    document.getElementById('weekly-grid').classList.remove('active');
+    document.getElementById('ct-view').classList.remove('active');
+    document.getElementById('courses-view').classList.toggle('active', isCourses);
+    
+    document.getElementById('courses-toggle').querySelector('i').className = isCourses ? 'fas fa-list' : 'fas fa-book';
+    document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
+    document.getElementById('ct-toggle').querySelector('i').className = 'fas fa-file-alt';
+    document.getElementById('current-day').textContent = isCourses ? 'Course Details & Credits' : `${currentDay} Schedule`;
+    
+    if (isCourses) buildCoursesTable();
+});
+
+/* ---------- Logout ---------- */
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    const logoutBtn = document.getElementById('logout-btn');
+    logoutBtn.disabled = true;
+    logoutBtn.style.opacity = '0.6';
+
+    try {
+        // Unregister the service worker so it stops intercepting requests
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(reg => reg.unregister()));
+        }
+        // Wipe every Cache Storage bucket the service worker created
+        if ('caches' in window) {
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map(key => caches.delete(key)));
+        }
+    } catch (e) {
+        console.warn('Cache/service worker cleanup failed:', e);
+    } finally {
+        localStorage.removeItem('studentId');
+        // Bust any HTTP-level cache on the login page too
+        window.location.href = 'login.html?t=' + Date.now();
+    }
+});
+
+/* ---------- Init ---------- */
+function init() {
+    document.getElementById('student-badge').textContent = `ID: ${studentId}`;
+
+    initTheme();
+    updateCurrentWeekBadge();
+    initDayBoxes();
+    displaySchedule(currentDay);
+    updateClock();
+    updateSummaryAndCountdown();
+    
+    setInterval(updateClock, 1000);
+    setInterval(() => {
+        displaySchedule(currentDay);
+        updateSummaryAndCountdown();
+        updateCurrentWeekBadge();
+    }, 30000);
+
+    document.getElementById('search-input').addEventListener('input', () => displaySchedule(currentDay));
+    document.getElementById('sync-btn').addEventListener('click', syncRoutineToCurrentTime);
+
+    if ('serviceWorker' in navigator) {
+        // updateViaCache: 'none' makes the browser always re-check sw.js itself
+        // against the network instead of serving a stale HTTP-cached copy
+        navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
+    }
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
