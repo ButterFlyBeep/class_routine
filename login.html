@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Class Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #a2d2ff; 
+            --primary-light: #e6f2ff; 
+            --primary-dark: #1d4ed8;
+            --bg-light: #eef6ff;
+            --card-bg: rgba(224, 242, 254, 0.75); 
+            --text: #1e293b; 
+            --text-light: #64748b;
+            --border: rgba(162, 210, 255, 0.5); 
+            --shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        [data-theme="dark"] {
+            --bg-light: #0f172a; 
+            --card-bg: rgba(30, 41, 59, 0.8); 
+            --text: #f1f5f9;
+            --text-light: #94a3b8; 
+            --border: rgba(96, 165, 250, 0.2);
+            --primary-dark: #60a5fa;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #cfe5ff 100%);
+            color: var(--text); min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            padding: 1rem;
+        }
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 0.4rem;
+            color: var(--primary-dark);
+        }
+        .login-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.5);
+            color: var(--text);
+            font-size: 1.05rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+        [data-theme="dark"] .input-group input {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        .login-btn {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+        }
+        .login-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        .theme-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ef4444;
+            color: white;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-btn" id="theme-btn" title="Toggle theme">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="login-card">
+        <h1>Class Schedule</h1>
+        <p>Enter your Student ID to continue</p>
+
+        <div class="input-group">
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="student-id" placeholder="Student ID (e.g. hehe)" autocomplete="off" maxlength="10">
+        </div>
+
+        <button class="login-btn" id="login-btn">
+            <i class="fas fa-sign-in-alt"></i> Enter
+        </button>
+    </div>
+
+    <div class="toast" id="toast">ayyyhayyy ke tumi?</div>
+
+    <script>
+        // Generate allowed IDs: 2313001 to 2313060
+        const allowedIDs = [];
+        for (let i = 1; i <= 60; i++) {
+            allowedIDs.push("2313" + String(i).padStart(3, "0"));
+        }
+
+        // Theme
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = saved || (prefersDark ? 'dark' : 'light');
+            document.body.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+        function toggleTheme() {
+            const cur = document.body.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            updateThemeIcon(next);
+        }
+        function updateThemeIcon(t) {
+            document.getElementById('theme-btn').querySelector('i').className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+        document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+
+        // Check if already logged in
+        if (localStorage.getItem('studentId')) {
+            window.location.href = 'index.html';
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function handleLogin() {
+            const input = document.getElementById('student-id');
+            const id = input.value.trim();
+
+            if (allowedIDs.includes(id)) {
+                localStorage.setItem('studentId', id);
+                window.location.href = 'index.html';
+            } else {
+                showToast();
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        document.getElementById('login-btn').addEventListener('click', handleLogin);
+        document.getElementById('student-id').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        initTheme();
+        document.getElementById('student-id').focus();
+    </script>
+</body>
+</html>
