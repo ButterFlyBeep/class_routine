@@ -550,9 +550,9 @@ function updateCurrentWeekBadge() {
     const activeWeek = getActiveWeek();
     const badge = document.getElementById('week-badge');
     if (activeWeek) {
-        badge.innerHTML = `<i class="fas fa-calendar-week"></i> Week ${activeWeek} of Semester`;
+        badge.innerHTML = `<i class="fas fa-calendar-week"></i> Week ${activeWeek} `;
     } else {
-        badge.innerHTML = `<i class="fas fa-umbrella-beach"></i> Mid-Break / Off-Period`;
+        badge.innerHTML = `<i class="fas fa-umbrella-beach"></i> Vacation <3 `;
     }
 }
 
@@ -885,7 +885,7 @@ document.getElementById('ct-toggle').addEventListener('click', () => {
     document.getElementById('ct-toggle').querySelector('i').className = isCt ? 'fas fa-list' : 'fas fa-file-alt';
     document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
     document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
-    document.getElementById('current-day').textContent = isCt ? 'Class Test Routine' : `${currentDay} Schedule`;
+    document.getElementById('current-day').textContent = isCt ? 'Class Test Routine (2nd Year Even Semester)' : `${currentDay} Schedule`;
     
     if (isCt) buildCtRoutineTable();
 });
@@ -928,8 +928,7 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
         console.warn('Cache/service worker cleanup failed:', e);
     } finally {
         localStorage.removeItem('studentId');
-        // Bust any HTTP-level cache on the login page too
-        window.location.href = 'login.html?t=' + Date.now();
+        window.location.href = 'login.html';
     }
 });
 
