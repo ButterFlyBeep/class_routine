@@ -885,7 +885,7 @@ document.getElementById('ct-toggle').addEventListener('click', () => {
     document.getElementById('ct-toggle').querySelector('i').className = isCt ? 'fas fa-list' : 'fas fa-file-alt';
     document.getElementById('view-toggle').querySelector('i').className = 'fas fa-th';
     document.getElementById('courses-toggle').querySelector('i').className = 'fas fa-book';
-    document.getElementById('current-day').textContent = isCt ? 'Class Test Routine (2nd Year Even Semester)' : `${currentDay} Schedule`;
+    document.getElementById('current-day').textContent = isCt ? 'Class Test Routine' : `${currentDay} Schedule`;
     
     if (isCt) buildCtRoutineTable();
 });
