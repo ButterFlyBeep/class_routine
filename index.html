@@ -538,13 +538,21 @@ function updateClock() {
 }
 
 /* ---------- Week Helper ---------- */
+ function parseLocalDate(dateStr) {
+    // "YYYY-MM-DD" -> local-time Date (avoids the UTC-midnight parsing
+    // that new Date("YYYY-MM-DD") does, which caused off-by-one-day bugs
+    // in timezones ahead of UTC, e.g. showing "Vacation" a day early).
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+
 function getActiveWeek() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     for (let item of semesterWeeks) {
-        const start = new Date(item.start);
-        const end = new Date(item.end);
+        const start = parseLocalDate(item.start);
+        const end = parseLocalDate(item.end);
         end.setHours(23, 59, 59, 999);
         if (today >= start && today <= end) {
             return item.week;
